@@ -2,7 +2,7 @@
 
 ## Goal
 
-To get some guided hands on, at speed, using a REST API to pull data into a Warehouse. In addition, will work with Airflow here which allows some understanding when I port this to [Dagster](https://dagster.io/) because [Dagster](https://dagster.io/) provides a comparison.
+To get some guided hands on, at speed, using a REST API to pull data into a Warehouse. In addition, will work with Airflow here which allows some understanding when I port this to [Dagster](https://dagster.io/) because [Dagster](https://dagster.io/) provides a comparison with AirFlow.
 
 Wish me luck.
 
@@ -38,13 +38,43 @@ specifically the `statistics` section. We are using the API
 https://www.googleapis.com/youtube/v3/videos?id=[ID]&part=statistics&key=[API Key]
 ```
 
+However, to get there we need to consider getting the video id, for that we start from the channels API:
+
+```bash
+https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={channel_handle}&key={api_key}
+```
+
+from which we will extract the first element of the `items`:
+
+```json
+{
+  "kind": "youtube#channelListResponse",
+  "etag": "mky5yfatRnp-E8N9-BwXGY8W8Dk",
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 5
+  },
+  "items": [
+    {
+      "kind": "youtube#channel",
+      "etag": "-f8h6RTCebSZttPcDz3dTkMV5yo",
+      "id": "UCX6OQ3DkcsbYNE6H8uQQuVA",
+      "contentDetails": {
+        "relatedPlaylists": {
+          "likes": "",
+          "uploads": "UUX6OQ3DkcsbYNE6H8uQQuVA"
+        }
+      }
+    }
+  ]
+}
+```
+
+Once we have this item: `contentDetails.relatedPlaylists.uploads` will give us the PlayList ID.
+
+## Security of Access
+
 The security of this is okay against casual intrusion and it would require more effort to get the key parameter - the most likely leaking would be on the server side logs. Since we are not using this API from several IP addresses, the only restriction we have on the API is to be against Youtube only and for public data. We just don't feel like doing more for this tutorial and will retire the key when done.
-
-We also need to get data from other APIs. Like for example, we need to get those video IDs.
-
-- Channels to get the Playlist IDs
-- Playlist Items to get the Video IDs
-- Video Data to get the stats
 
 ## Appendix
 
